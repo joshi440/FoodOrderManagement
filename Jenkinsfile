@@ -2,6 +2,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         DOCKER_IMAGE = 'joshithachilukuri/food-order-management:v1'
     }
