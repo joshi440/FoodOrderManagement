@@ -18,6 +18,13 @@ pipeline {
             }
         }
 
+        stage('Checkout') {
+            steps {
+                bat 'dir'
+                bat 'git rev-parse --short HEAD'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 bat 'docker build -t %DOCKER_IMAGE% .'
@@ -42,18 +49,31 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Verify Kubernetes Access') {
+            steps {
+                bat 'kubectl get nodes'
+            }
+        }
+
+        stage('Deploy FoodOrderManagement') {
             steps {
                 bat 'kubectl apply -f deployment.yaml'
                 bat 'kubectl apply -f service.yaml'
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
                 bat 'kubectl rollout status deployment/food-order-deployment --timeout=120s'
+                bat 'kubectl get pods'
+                bat 'kubectl get service food-order-service'
             }
         }
     }
 
     post {
         success {
-            echo 'FoodOrderManagement pipeline completed successfully!'
+            echo 'FoodOrderManagement Kubernetes deployment completed successfully.'
         }
 
         failure {
